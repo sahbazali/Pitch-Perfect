@@ -34,9 +34,19 @@ class RecordSoundsViewController : UIViewController {
         let filePath = URL(string: pathArray.joined(separator: "/"))
 
         let session = AVAudioSession.sharedInstance()
-        try! session.setCategory(AVAudioSession.Category.playAndRecord, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.defaultToSpeaker)
+        do {
+            try session.setCategory(AVAudioSession.Category.playAndRecord, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.defaultToSpeaker)
+        } catch {
+            showAlert(Alerts.AudioSessionError, message: Alerts.RecordingFailedMessage)
+            
+        }
+        do {
+            try audioRecorder = AVAudioRecorder(url: filePath!, settings: [:])
+        } catch {
+            showAlert(Alerts.AudioRecorderError, message: Alerts.RecordingFailedMessage)
+            
+        }
 
-        try! audioRecorder = AVAudioRecorder(url: filePath!, settings: [:])
         audioRecorder.delegate = self
         audioRecorder.isMeteringEnabled = true
         audioRecorder.prepareToRecord()
@@ -66,7 +76,7 @@ extension RecordSoundsViewController : AVAudioRecorderDelegate {
             performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
         }
         else {
-            print("Couldn't record, error occurred!")
+            showAlert(Alerts.RecordingFailedTitle, message: Alerts.RecordingFailedMessage)
         }
     }
 }
